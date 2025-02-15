@@ -1,5 +1,7 @@
 import time
 
+from configs.path_config import DEFAULT_CHROME_DRIVER_PATH
+
 
 # def fetch_html_content_by(web_url) -> str:
 #
@@ -18,9 +20,9 @@ def fetch_html_content_by(web_url) -> str:
     from selenium import webdriver
     from selenium.webdriver.chrome.service import Service
 
-    service = Service('/usr/local/bin/chromedriver')
+    service = Service(DEFAULT_CHROME_DRIVER_PATH)
     options = webdriver.ChromeOptions()
-    # options.add_argument('--headless')  # 启动无头模式
+    options.add_argument('--headless')  # 启动无头模式
     driver = webdriver.Chrome(options, service)
 
     driver.get(web_url)

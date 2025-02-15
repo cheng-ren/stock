@@ -42,3 +42,8 @@ if platform.system() == 'Darwin':
     DEFAULT_UPLOAD_VIDEO = '/Users/yiche/PycharmProjects/the_five_tigers/resource/default_video.mp4'
 else:
     DEFAULT_UPLOAD_VIDEO = '/root/autodl-tmp/the_five_tigers/resource/default_video.mp4'
+
+if platform.system() == 'Darwin':
+    DEFAULT_CHROME_DRIVER_PATH = '/usr/local/bin/chromedriver'
+else:
+    DEFAULT_CHROME_DRIVER_PATH = '/usr/bin/chromedriver'
