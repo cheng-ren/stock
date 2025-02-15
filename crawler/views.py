@@ -1,10 +1,12 @@
 from datetime import datetime
-from database_stock.exec import sync_news
+
+from crawler.utils.browser import fetch_html_content_by
+from database_stock.exec import sync_news, sync_stock
 import requests
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
-from crawler.utils.dongfangcaifu import fetch_news_from_dfcf
+from crawler.utils.dongfangcaifu import fetch_news_from_dfcf, fetch_stocks_from_dfcf
 from utils.log.yc_logger import logger
 from utils.net.net import require_fields, get_request_params, validate_fields, success_response, error_response
 
@@ -12,10 +14,16 @@ from utils.net.net import require_fields, get_request_params, validate_fields, s
 def index(request):
     return render(request, 'crawler.html')
 
+
 @require_http_methods(["GET"])
 def stock_list(request):
-    pass
     # 会产生股票代码和股票名称
+    sync_to_database = get_request_params(request, field='sync_to_database', default=False)
+    items = fetch_stocks_from_dfcf()
+    if sync_to_database:
+        for item in items:
+            sync_stock(item)
+    return success_response({"count": len(items), "datas": items})
 
 
 @require_http_methods(["GET"])

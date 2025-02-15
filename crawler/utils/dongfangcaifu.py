@@ -1,8 +1,25 @@
 import json
 import re
 from datetime import datetime
-
+from lxml import etree
 from crawler.utils.browser import fetch_html_content_by
+
+
+def fetch_stocks_from_dfcf() -> list:
+    html_content = fetch_html_content_by("https://quote.eastmoney.com/stocklist.Html")
+    root = etree.HTML(html_content)
+    nodes = root.xpath('//div[@class="qox"]//li/a')
+    result = []
+    for item in nodes:
+        if item.text is not None:
+            match = re.search(r'([^\(]+)\((\d+)\)', item.text)
+            if match:
+                name = match.group(1).strip()  # 股票名称
+                code = match.group(2)  # 股票代码
+                result.append({"code":code, "title": name})
+            else:
+                print("No match found")
+    return result
 
 
 def fetch_news_from_dfcf(stock_code, fetch_end_time=None, page=1) -> ():
@@ -48,3 +65,7 @@ def fetch_news_from_dfcf(stock_code, fetch_end_time=None, page=1) -> ():
         return count, items
     else:
         return 0, []
+
+
+if __name__ == '__main__':
+    print(fetch_stocks_from_dfcf())
