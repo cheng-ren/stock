@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from crawler.utils.browser import fetch_html_content_by
-from database_stock.exec import sync_news, sync_stock
+from crawler.utils.haiguitouzi import fetch_stocks_from_hgtz
+from database_stock.exec import sync_news, sync_stock, query_stock_from_database
 import requests
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
@@ -19,11 +20,30 @@ def index(request):
 def stock_list(request):
     # 会产生股票代码和股票名称
     sync_to_database = get_request_params(request, field='sync_to_database', default=False)
-    items = fetch_stocks_from_dfcf()
+    items = fetch_stocks_from_hgtz()
     if sync_to_database:
         for item in items:
             sync_stock(item)
     return success_response({"count": len(items), "datas": items})
+
+
+def automatic(request):
+    """
+    获取所有股票码后 拉取资讯
+    :return: 查询结果
+    """
+    try:
+        stocks = query_stock_from_database("", is_limit=False)
+        format_result = []
+        for stock in stocks:
+            count, items = fetch_news_from_dfcf(stock_code=stock['code'])
+            for item in items:
+                sync_news(item)
+            format_result.append({"code": stock['code'], "title": stock['title'], "count": count})
+            logger.info(f"{len(format_result)}/{len(stocks)} -- code: {stock['code']} - title: {stock['title']} - count: {count}")
+        return success_response(format_result)
+    except Exception as e:
+        return error_response(e)
 
 
 @require_http_methods(["GET"])

@@ -78,7 +78,7 @@ def sync_stock(json_data):
     # connection.close()
 
 
-def query_stock_from_database(keyword):
+def query_stock_from_database(keyword, is_limit=True):
     connection = build_connection()
 
     try:
@@ -87,9 +87,10 @@ def query_stock_from_database(keyword):
                 SELECT * FROM stock_info
                 WHERE 
                 (code like %s or title like %s)
-                LIMIT 10
+                LIMIT %s
                 """
-            cursor.execute(sql, (f"%{keyword}%", f"%{keyword}%",))
+            limit = 10 if is_limit else 1000000
+            cursor.execute(sql, (f"%{keyword}%", f"%{keyword}%", limit,))
             result = cursor.fetchall()  # 获取查询结果
             return result
     finally:

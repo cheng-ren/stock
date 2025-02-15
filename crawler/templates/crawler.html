@@ -1,13 +1,70 @@
+<!-- my_template.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>工具链首页</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股神工具</title>
 </head>
 <body>
-<div>
-    <p>导航页</p>
-</div>
+    <h1>工具</h1>
+    <button id="myButton">抓取所有股票代码</button>
+    <div>
+        <h2>股票数据列表</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>股票代码</th>
+                    <th>股票名称</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="stockList"></tbody>
+        </table>
+    </div>
+    <div id="responseData"></div>
 
+    <script>
+        // 页面加载时自动请求接口
+        window.onload = function() {
+            fetch('/crawler/stock_list')
+                .then(response => response.json())
+                .then(data => {
+                    const stockList = data.data.datas;
+                    const stockListElement = document.getElementById('stockList');
+
+                    // 动态生成股票列表
+                    stockList.forEach(stock => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${stock.code}</td>
+                            <td>${stock.title}</td>
+                            <td><button onclick="fetchStockData('${stock.code}')">抓取</button></td>
+                        `;
+                        stockListElement.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('请求失败:', error));
+        };
+
+        // 抓取按钮点击事件
+        function fetchStockData(stockCode) {
+            fetch(`/crawler/stock_by_id?code=${stockCode}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);  // 弹出抓取结果
+            })
+            .catch(error => {
+                console.error('请求失败:', error);
+                alert('抓取失败，请稍后重试');
+            });
+        }
+    </script>
 </body>
 </html>

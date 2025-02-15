@@ -1,8 +1,9 @@
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from lxml import etree
 from crawler.utils.browser import fetch_html_content_by
+from utils.log.yc_logger import logger
 
 
 def fetch_stocks_from_dfcf() -> list:
@@ -16,7 +17,7 @@ def fetch_stocks_from_dfcf() -> list:
             if match:
                 name = match.group(1).strip()  # 股票名称
                 code = match.group(2)  # 股票代码
-                result.append({"code":code, "title": name})
+                result.append({"code": code, "title": name})
             else:
                 print("No match found")
     return result
@@ -31,7 +32,13 @@ def fetch_news_from_dfcf(stock_code, fetch_end_time=None, page=1) -> ():
     :return: 数据个数, 数组
     """
     # 提前转换,以尽早知道参数是否合规
-    fetch_end_time_date = datetime.strptime(fetch_end_time, "%Y-%m-%d %H:%M:%S")
+    if fetch_end_time is not None:
+        fetch_end_time_date = datetime.strptime(fetch_end_time, "%Y-%m-%d %H:%M:%S")
+    else:
+        now = datetime.now()
+        yesterday = now - timedelta(days=2)
+        yesterday_midnight = datetime(yesterday.year, yesterday.month, yesterday.day)
+        fetch_end_time_date = yesterday_midnight
 
     page_param = (("_" if page > 1 else "") + str(page)) if page > 1 else ""
     web_url = f"https://guba.eastmoney.com/list,{stock_code},1,f{page_param}.html"
@@ -40,29 +47,21 @@ def fetch_news_from_dfcf(stock_code, fetch_end_time=None, page=1) -> ():
     match = re.search(r'<script>var article_list=({.*?});</script>', html_content, re.DOTALL)
     if match:
         json_str = match.group(1)
-        json_data = json.loads(json_str)  # 解析 JSON
+        json_data = json.loads(json_str)
         count = json_data['count']
         items = json_data['re']
-        # 如果是最后一页, 则不处理
-        if count_per_page * page <= count:
-            # 数据提取后, 做时间匹配
-            if fetch_end_time is not None:
-                result_items = []
-                for item in items:
-                    post_publish_time_str = item['post_publish_time']
-                    post_publish_time = datetime.strptime(post_publish_time_str, "%Y-%m-%d %H:%M:%S")
-                    if fetch_end_time_date > post_publish_time: # 符合要求的item
-                        result_items.append(item)
-                if len(result_items) == len(items):  # 全部匹配, 则向下一页查找
-                    next_count, next_items = fetch_news_from_dfcf(stock_code, fetch_end_time, page + 1)
-                    r_item = next_items + result_items
-                    return len(r_item), r_item
-                return len(result_items), result_items
-            else:
-                next_count, next_items = fetch_news_from_dfcf(stock_code, fetch_end_time, page + 1)
-                r_item = next_items + items
-                return len(r_item), r_item
-        return count, items
+
+        result_items = []
+        for item in items:
+            post_publish_time_str = item['post_publish_time']
+            post_publish_time = datetime.strptime(post_publish_time_str, "%Y-%m-%d %H:%M:%S")
+            if fetch_end_time_date <= post_publish_time:  # 符合要求的item
+                result_items.append(item)
+        if len(result_items) == len(items) and count_per_page * page <= count:  # 全部匹配, 则向下一页查找
+            next_count, next_items = fetch_news_from_dfcf(stock_code, fetch_end_time, page + 1)
+            r_item = next_items + result_items
+            return len(r_item), r_item
+        return len(result_items), result_items
     else:
         return 0, []
 
