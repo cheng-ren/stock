@@ -119,7 +119,7 @@ def query_news_from_database(code, keyword, start_time, end_time):
                       WHERE title like %s
                       AND stock_code like %s
                       AND publish_time BETWEEN %s AND %s
-                      ORDER BY stock_code, publish_time DESC) AS n
+                      ORDER BY publish_time, stock_code DESC) AS n
                 JOIN stock_info s ON s.code = n.stock_code
                 WHERE row_num <= 100
                 GROUP BY stock_code;
