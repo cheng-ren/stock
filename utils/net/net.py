@@ -22,10 +22,10 @@ def error_response(message):
             logger.error(f"发生严重问题:{message}")
             raise message
         template = {'success': False, 'message': message.__str__(), 'data': None}
-        return JsonResponse(template, status=400)
+        return JsonResponse(template, status=200)
     else:
         template = {'success': False, 'message': message, 'data': None}
-        return JsonResponse(template, status=400)
+        return JsonResponse(template, status=200)
 
 
 def require_fields(fields):
