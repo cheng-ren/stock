@@ -121,7 +121,7 @@ def query_news_from_database(code, keyword, start_time, end_time):
                       AND publish_time BETWEEN %s AND %s
                       ORDER BY stock_code, publish_time DESC) AS n
                 JOIN stock_info s ON s.code = n.stock_code
-                WHERE row_num <= 10
+                WHERE row_num <= 100
                 GROUP BY stock_code;
                 """
             cursor.execute(sql, (f"%{keyword}%", f"%{code}%", start_time, end_time,))
