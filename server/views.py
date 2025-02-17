@@ -35,7 +35,9 @@ def query_news(request):
                 ret_item = item
 
             if ret_item is not None:
-                for it in item['list']:
+                sorted_json_array = sorted(item['list'],
+                                           key=lambda x: datetime.strptime(x['publish_time'], '%Y-%m-%d %H:%M:%S.%f'))
+                for it in sorted_json_array:
                     time_str = it['publish_time']
                     dt = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
                     formatted_str = dt.strftime('%m-%d %H:%M')
