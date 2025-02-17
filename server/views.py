@@ -1,5 +1,6 @@
 import json
 from collections import defaultdict
+from datetime import datetime
 
 from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
@@ -26,11 +27,22 @@ def query_news(request):
 
         format_result = []
         for item in result:
+            ret_item = None
             if isinstance(item['list'], list):
-                format_result.append(item)
+                ret_item = item
             elif isinstance(item['list'], str):
                 item['list'] = json.loads(item['list'])
-                format_result.append(item)
+                ret_item = item
+
+            if ret_item is not None:
+                for it in item['list']:
+                    time_str = it['publish_time']
+                    dt = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
+                    formatted_str = dt.strftime('%Y-%m-%d %H:%M:%S')
+                    it['publish_time'] = formatted_str
+
+                format_result.append(ret_item)
+
 
         return success_response({"datas": format_result})
     except Exception as e:
