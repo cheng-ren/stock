@@ -38,7 +38,7 @@ def query_news(request):
                 for it in item['list']:
                     time_str = it['publish_time']
                     dt = datetime.strptime(time_str, '%Y-%m-%d %H:%M:%S.%f')
-                    formatted_str = dt.strftime('%Y-%m-%d %H:%M:%S')
+                    formatted_str = dt.strftime('%m-%d %H:%M')
                     it['publish_time'] = formatted_str
 
                 format_result.append(ret_item)
