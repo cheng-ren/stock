@@ -99,8 +99,6 @@ def query_stock_from_database(keyword, is_limit=True):
 
 def query_news_from_database(code, keyword, start_time, end_time):
     connection = build_connection()
-    logger.info(code)
-    logger.info(keyword)
     try:
         with connection.cursor() as cursor:
             sql = """
@@ -119,14 +117,14 @@ def query_news_from_database(code, keyword, start_time, end_time):
                              @current_stock_code := stock_code
                       FROM news
                       WHERE title like %s
-                      AND stock_code = %s
+                      AND stock_code like %s
                       AND publish_time BETWEEN %s AND %s
                       ORDER BY stock_code, publish_time DESC) AS n
                 JOIN stock_info s ON s.code = n.stock_code
                 WHERE row_num <= 10
                 GROUP BY stock_code;
                 """
-            cursor.execute(sql, (f"%{keyword}%", code, start_time, end_time,))
+            cursor.execute(sql, (f"%{keyword}%", f"%{code}%", start_time, end_time,))
             result = cursor.fetchall()  # 获取查询结果
             return result
         # with connection.cursor() as cursor:
