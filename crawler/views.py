@@ -32,13 +32,15 @@ def automatic_first_of_day(request):
     获取所有股票码后 拉取资讯
     :return: 查询结果
     """
+    sync_to_database = get_request_params(request, field='sync_to_database', default=False)
     try:
         stocks = query_stock_from_database("", is_limit=False)
         format_result = []
         for stock in stocks:
             count, items = fetch_news_from_dfcf(stock_code=stock['code'])
-            for item in items:
-                sync_news(item)
+            if sync_to_database:
+                for item in items:
+                    sync_news(item)
             format_result.append({"code": stock['code'], "title": stock['title'], "count": count})
             logger.info(f"{len(format_result)}/{len(stocks)} -- code: {stock['code']} - title: {stock['title']} - count: {count}")
         return success_response(format_result)
@@ -51,13 +53,17 @@ def automatic_every_hour_of_day(request):
        获取所有股票码后 拉取资讯
        :return: 查询结果
        """
+    sync_to_database = get_request_params(request, field='sync_to_database', default=False)
     try:
         stocks = query_news_group_stock_from_database()
+        logger.info(stocks)
+        logger.info(len(stocks))
         format_result = []
         for stock in stocks:
             count, items = fetch_news_from_dfcf(stock_code=stock['code'])
-            for item in items:
-                sync_news(item)
+            if sync_to_database:
+                for item in items:
+                    sync_news(item)
             format_result.append({"code": stock['code'], "title": stock['title'], "count": count})
             logger.info(
                 f"{len(format_result)}/{len(stocks)} -- code: {stock['code']} - title: {stock['title']} - count: {count}")

@@ -103,7 +103,7 @@ def query_news_group_stock_from_database(start_time='1970-01-01 00:00:00', end_t
     try:
         with connection.cursor() as cursor:
             sql = """
-                SELECT stock_code as code FROM news
+                SELECT stock_code as code, title FROM news
                 WHERE 
                 publish_time BETWEEN %s AND %s
                 group by stock_code
