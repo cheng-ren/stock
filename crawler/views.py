@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from crawler.utils.browser import fetch_html_content_by
 from crawler.utils.haiguitouzi import fetch_stocks_from_hgtz
@@ -55,7 +55,10 @@ def automatic_every_hour_of_day(request):
        """
     sync_to_database = get_request_params(request, field='sync_to_database', default=False)
     try:
-        stocks = query_news_group_stock_from_database()
+        now = datetime.now()
+        three_days_ago = now - timedelta(days=3)
+        start_time = three_days_ago.strftime('%Y-%m-%d %H:%M:%S')
+        stocks = query_news_group_stock_from_database(start_time=start_time)
         logger.info(stocks)
         logger.info(len(stocks))
         format_result = []
