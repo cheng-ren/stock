@@ -97,6 +97,23 @@ def query_stock_from_database(keyword, is_limit=True):
         connection.close()
 
 
+def query_news_group_stock_from_database(start_time='1970-01-01 00:00:00', end_time='2970-01-01 00:00:00'):
+    connection = build_connection()
+
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+                SELECT stock_code as code FROM news
+                WHERE 
+                publish_time BETWEEN %s AND %s
+                group by stock_code
+                """
+            cursor.execute(sql, (start_time, end_time,))
+            result = cursor.fetchall()  # 获取查询结果
+            return result
+    finally:
+        connection.close()
+
 def query_news_from_database(code, keyword, start_time, end_time):
     connection = build_connection()
     try:
@@ -163,22 +180,22 @@ def query_news_from_database(code, keyword, start_time, end_time):
 
 if __name__ == '__main__':
     # 示例 JSON 数据
-    json_data = {
-        "post_id": 1515574880,
-        "post_title": "AI催化持续 相关板块中期看好逻辑不改",
-        "post_content": "",
-        "source_post_content": "",
-        "source_post_type": 0,
-        "post_click_count": 3513,
-        "post_comment_count": 6,
-        "post_last_time": "2025-02-12 06:30:14",
-        "post_publish_time": "2025-02-12 06:30:14",
-        "stockbar_code": "600120",
-        "user_nickname": "浙江东方资讯",
-        "user_is_majia": True,
-        "Art_Url": "http://finance.eastmoney.com/a/202502123316495952.html",
-        "Art_OriginUrl": "http://finance.eastmoney.com/news/1354,202502123316495952.html"
-    }
+    # json_data = {
+    #     "post_id": 1515574880,
+    #     "post_title": "AI催化持续 相关板块中期看好逻辑不改",
+    #     "post_content": "",
+    #     "source_post_content": "",
+    #     "source_post_type": 0,
+    #     "post_click_count": 3513,
+    #     "post_comment_count": 6,
+    #     "post_last_time": "2025-02-12 06:30:14",
+    #     "post_publish_time": "2025-02-12 06:30:14",
+    #     "stockbar_code": "600120",
+    #     "user_nickname": "浙江东方资讯",
+    #     "user_is_majia": True,
+    #     "Art_Url": "http://finance.eastmoney.com/a/202502123316495952.html",
+    #     "Art_OriginUrl": "http://finance.eastmoney.com/news/1354,202502123316495952.html"
+    # }
 
     # 调用同步方法
     # sync(json_data)
@@ -187,5 +204,5 @@ if __name__ == '__main__':
     # for item in ret:
     #     print(f"{item['title']} - {item['publish_time']}")
 
-    ret = query_stock_from_database("600120")
+    ret = query_news_group_stock_from_database()
     print(ret)
